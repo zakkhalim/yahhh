@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pustakawan AI — Katalog Perpustakaan</title>
+<meta name="description" content="Pustakawan AI: katalog perpustakaan untuk mencari buku, lokasi lantai dan rak, serta informasi buku.">
+<meta name="theme-color" content="#152218">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="drawer-label">Katalog · Sistem Klasifikasi Lokal</div>
+    <h1>Pustakawan AI</h1>
+    <p class="sub">Cari judul, penulis, atau topik untuk menemukan buku beserta lantai dan nomor raknya. Atau tanyakan langsung pada asisten di pojok kanan bawah.</p>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Cari judul, penulis, atau kata kunci…" autocomplete="off">
+      <button class="tambah-btn" id="tambahBukuBtn" type="button">+ Tambah Buku</button>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+  </header>
+
+  <div class="chips" id="chipRow"></div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="detail-kartu" id="detailKartu"></div>
+</div>
+
+<div class="overlay" id="formOverlay">
+  <div class="detail-kartu form-kartu" id="formKartu">
+    <button class="tutup-btn" id="tutupForm" aria-label="Tutup">&times;</button>
+    <span class="lubang l"></span><span class="lubang r"></span>
+    <h2>Tambah Buku Baru</h2>
+    <p class="sub-form">Isi kartu katalog untuk menambahkan buku ke koleksi. Kolom bertanda * wajib diisi.</p>
+    <p class="form-status-msg" id="formStatusMsg">Buku berhasil ditambahkan ke katalog.</p>
+    <form id="formTambah" novalidate>
+      <div class="field-row full">
+        <div class="field" id="f-judul">
+          <label>Judul buku *</label>
+          <input type="text" id="in-judul" placeholder="Contoh: Cantik Itu Luka">
+          <span class="field-error">Judul buku wajib diisi.</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="f-penulis">
+          <label>Penulis *</label>
+          <input type="text" id="in-penulis" placeholder="Contoh: Eka Kurniawan">
+          <span class="field-error">Nama penulis wajib diisi.</span>
+        </div>
+        <div class="field" id="f-tahun">
+          <label>Tahun terbit</label>
+          <input type="number" id="in-tahun" placeholder="2024" min="0" max="2100">
+          <span class="field-error">Isi tahun yang valid.</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="f-genre">
+          <label>Genre *</label>
+          <input type="text" id="in-genre" list="genreList" placeholder="Contoh: Fiksi">
+          <datalist id="genreList"></datalist>
+          <span class="field-error">Genre wajib diisi.</span>
+        </div>
+        <div class="field" id="f-lantai">
+          <label>Lantai *</label>
+          <select id="in-lantai">
+            <option value="1">Lantai 1 — Umum & Referensi</option>
+            <option value="2">Lantai 2 — Fiksi & Sastra</option>
+            <option value="3">Lantai 3 — Sains & Teknologi</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="f-rak">
+          <label>Nomor rak *</label>
+          <input type="text" id="in-rak" placeholder="Contoh: D-07">
+          <span class="field-error">Nomor rak wajib diisi.</span>
+        </div>
+        <div class="field" id="f-call">
+          <label>Nomor panggil</label>
+          <input type="text" id="in-call" placeholder="Contoh: 899.221/KUR/c">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="f-status">
+          <label>Status *</label>
+          <select id="in-status">
+            <option value="tersedia">Tersedia</option>
+            <option value="dipinjam">Dipinjam</option>
+          </select>
+        </div>
+        <div class="field" id="f-eksemplar">
+          <label>Jumlah eksemplar</label>
+          <input type="number" id="in-eksemplar" placeholder="1" min="1" value="1">
+        </div>
+      </div>
+      <div class="field-row full">
+        <div class="field" id="f-sinopsis">
+          <label>Sinopsis</label>
+          <textarea id="in-sinopsis" placeholder="Ringkasan singkat isi buku…"></textarea>
+        </div>
+      </div>
+      <div class="field-row full">
+        <div class="field" id="f-cover">
+          <label>Cover buku (opsional)</label>
+          <input type="file" id="in-cover-file" accept="image/*">
+          <input type="url" id="in-cover-url" placeholder="atau tempel alamat gambar cover (https://…)">
+          <span class="field-hint">Kosongkan untuk mencari cover otomatis dari Open Library.</span>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-batal" id="batalForm">Batal</button>
+        <button type="submit" class="btn-simpan">Simpan ke Katalog</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<button class="ai-toggle" id="aiToggle">Tanya Pustakawan</button>
+
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-head">
+    <div class="ai-head-title">Pustakawan AI<small>Bertanya tentang koleksi perpustakaan</small></div>
+    <button id="aiClose" aria-label="Tutup">&times;</button>
+  </div>
+  <div class="ai-messages" id="aiMessages">
+    <div class="msg ai">Selamat datang. Tanyakan buku apa saja — misalnya "ada buku tentang sejarah dunia?" atau "di mana rak novel Pramoedya?"</div>
+  </div>
+  <div class="ai-input-row">
+    <input type="text" id="aiInput" placeholder="Tulis pertanyaan Anda…">
+    <button id="aiSend">Kirim</button>
+  </div>
+  <div class="ai-hint">Jawaban disusun dari data koleksi yang tersedia di katalog ini.</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
